@@ -4,10 +4,7 @@ I play a lot of aim-focused games, but since those are too common already, I dec
 Whack-a-Mole game.
 
 Week 1:
-
-
-
-
+![alt text](week1.png)
 
 
 Week 2:
