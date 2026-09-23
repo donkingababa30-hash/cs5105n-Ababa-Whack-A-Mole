@@ -11,3 +11,12 @@ Week 2:
 ![alt text](<Screenshot 2026-09-23 025009.png>)
 
 ![alt text](<Screenshot 2026-09-23 025033.png>)
+
+Week 3:
+![alt text](week3.png)
+
+![alt text](week3(1).png)
+
+![alt text](week3(2).png)
+
+![alt text](week3(3).png)

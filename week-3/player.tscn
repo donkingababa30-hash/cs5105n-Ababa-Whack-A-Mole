@@ -1,0 +1,22 @@
+[gd_scene format=3 uid="uid://dnqaw0m5y0j36"]
+
+[ext_resource type="Texture2D" uid="uid://d1obx6tcar014" path="res://alienBeige.png" id="1_4flbx"]
+[ext_resource type="Script" uid="uid://cngpo5tyqq8n3" path="res://player.gd" id="1_onrkg"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_4kxuq"]
+height = 22.0
+
+[node name="Player" type="CharacterBody2D" unique_id=278750377]
+script = ExtResource("1_onrkg")
+speed = 200.0
+jump_velocity = -300.0
+dash_speed = 400.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1050804271]
+position = Vector2(-1, -1)
+shape = SubResource("CapsuleShape2D_4kxuq")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1387207443]
+position = Vector2(-0.5, -0.9999962)
+scale = Vector2(0.2272727, 0.1956522)
+texture = ExtResource("1_4flbx")
