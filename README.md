@@ -9,14 +9,21 @@ Week 1:
 
 Week 2:
 ![alt text](<Screenshot 2026-09-23 025009.png>)
-
 ![alt text](<Screenshot 2026-09-23 025033.png>)
+
 
 Week 3:
 ![alt text](week3.png)
-
 ![alt text](week3(1).png)
-
 ![alt text](week3(2).png)
-
 ![alt text](week3(3).png)
+
+
+Week 4:
+AI Used: Gemini
+AI Prompt: Generate a character sprite Cute 2D side-view platformer character sprite, standing pose, simple flat colors, clean outline, plain white background, no shadow, game asset
+Animations: Idle, Run, Jump, Dash, Dust Particles
+
+![alt text](week4.png)
+![alt text](week4(1).jpg)
+![alt text](week4(2).jpg)
