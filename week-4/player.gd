@@ -1,7 +1,7 @@
 extends CharacterBody2D
 
 @export var speed: float = 300.0
-@export var jump_velocity: float = -400.0
+@export var jump_velocity: float = -480.0
 @export var gravity: float = 980.0
 
 @export var coyote_time: float = 0.12
@@ -21,20 +21,26 @@ var dash_direction: float = 1.0
 var base_scale: Vector2
 var was_on_floor: bool = false
 
+var is_invulnerable: bool = false
+@export var invuln_time: float = 1.2
+
 func _ready() -> void:
 	base_scale = sprite.scale
 
 func _physics_process(delta: float) -> void:
+	var can_control: bool = Game.is_running
+
 	if dash_cooldown_timer > 0:
 		dash_cooldown_timer -= delta
 
-	if Input.is_action_just_pressed("dash") and dash_cooldown_timer <= 0 and not is_dashing:
+	if can_control and Input.is_action_just_pressed("dash") and dash_cooldown_timer <= 0 and not is_dashing:
 		is_dashing = true
 		dash_timer = dash_duration
 		dash_cooldown_timer = dash_cooldown
 		velocity.y = 0
 		_dash_juice()
 		dust.restart()
+		Game.play_sfx("dash")
 
 	if is_dashing:
 		dash_timer -= delta
@@ -50,7 +56,7 @@ func _physics_process(delta: float) -> void:
 		if not is_on_floor():
 			coyote_timer -= delta
 
-		var direction := Input.get_axis("move_left", "move_right")
+		var direction := Input.get_axis("move_left", "move_right") if can_control else 0.0
 		if direction != 0:
 			velocity.x = direction * speed
 			sprite.flip_h = direction < 0
@@ -58,10 +64,11 @@ func _physics_process(delta: float) -> void:
 		else:
 			velocity.x = move_toward(velocity.x, 0, speed)
 
-		if Input.is_action_just_pressed("jump") and (is_on_floor() or coyote_timer > 0):
+		if can_control and Input.is_action_just_pressed("jump") and (is_on_floor() or coyote_timer > 0):
 			velocity.y = jump_velocity
 			coyote_timer = 0
 			_squash_and_stretch()
+			Game.play_sfx("jump")
 
 	move_and_slide()
 
@@ -92,3 +99,27 @@ func _dash_juice() -> void:
 	modulate = Color(1.5, 1.5, 1.5)
 	var flash_tween := create_tween()
 	flash_tween.tween_property(self, "modulate", Color.WHITE, 0.2)
+
+
+func is_player() -> bool:
+	return true
+
+
+## Called by hazards. Breaks a heart, knocks the player back and grants a
+## short window of invulnerability (with a flashing sprite) so a single hit
+## never drains more than one heart.
+func hurt() -> void:
+	if is_invulnerable or not Game.is_running:
+		return
+	is_invulnerable = true
+	Game.play_sfx("hurt")
+	Game.damage(1)
+	velocity.y = -280.0
+	velocity.x = -dash_direction * 240.0
+	var flash := create_tween()
+	for i in 6:
+		flash.tween_property(sprite, "modulate:a", 0.25, 0.08)
+		flash.tween_property(sprite, "modulate:a", 1.0, 0.08)
+	flash.tween_callback(func() -> void: sprite.modulate.a = 1.0)
+	await get_tree().create_timer(invuln_time).timeout
+	is_invulnerable = false

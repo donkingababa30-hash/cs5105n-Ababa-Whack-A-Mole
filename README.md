@@ -27,3 +27,15 @@ Animations: Idle, Run, Jump, Dash, Dust Particles
 ![alt text](week4.png)
 ![alt text](week4(1).jpg)
 ![alt text](week4(2).jpg)
+
+Week 5:
+Main Menu:
+![alt text](<week 5 main menu.png>)
+
+Settings:
+![alt text](<week 5 settings.png>)
+
+Game:
+![alt text](<week 5 game start.png>)
+
+![alt text](<week 5 game finish.png>)

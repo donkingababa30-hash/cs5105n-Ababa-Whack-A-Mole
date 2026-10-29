@@ -1,23 +1,178 @@
-[gd_scene format=3 uid="uid://dlvuw5lue6rb1"]
+[gd_scene format=3 uid="uid://7u640lqaa22v"]
 
-[ext_resource type="PackedScene" uid="uid://byhq6n2ewbprs" path="res://player.tscn" id="1_ig7tw"]
+[ext_resource type="PackedScene" uid="uid://byhq6n2ewbprs" path="res://player.tscn" id="1_player"]
+[ext_resource type="PackedScene" path="res://coin.tscn" id="2_coin"]
+[ext_resource type="PackedScene" path="res://spike.tscn" id="3_spike"]
+[ext_resource type="PackedScene" path="res://goal.tscn" id="4_goal"]
+[ext_resource type="Script" uid="uid://difwjinqw7hfi" path="res://scripts/game_level.gd" id="5_level"]
+[ext_resource type="Script" uid="uid://bp070pdodjvi6" path="res://scripts/hud.gd" id="6_hud"]
+[ext_resource type="Texture2D" uid="uid://brha8wjc4jr10" path="res://assets/generated/sky_background.png" id="7_bg"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_4kxuq"]
-size = Vector2(1152, 100)
+[sub_resource type="RectangleShape2D" id="Shape_ground"]
+size = Vector2(1152, 88)
 
-[node name="Main" type="Node2D" unique_id=457259498]
+[sub_resource type="RectangleShape2D" id="Shape_p1"]
+size = Vector2(160, 20)
 
-[node name="Ground" type="StaticBody2D" parent="." unique_id=1250946325]
+[sub_resource type="RectangleShape2D" id="Shape_p2"]
+size = Vector2(160, 20)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Ground" unique_id=898465590]
-position = Vector2(576, 550)
-shape = SubResource("RectangleShape2D_4kxuq")
+[sub_resource type="RectangleShape2D" id="Shape_p3"]
+size = Vector2(160, 20)
 
-[node name="ColorRect" type="ColorRect" parent="Ground" unique_id=1389473431]
-offset_top = 499.0
-offset_right = 1150.0
-offset_bottom = 602.0
-color = Color(0.43702832, 0.356311, 0.17004794, 1)
+[sub_resource type="RectangleShape2D" id="Shape_p4"]
+size = Vector2(80, 20)
 
-[node name="Player" parent="." unique_id=1018908464 instance=ExtResource("1_ig7tw")]
-position = Vector2(13, 396)
+[node name="Main" type="Node2D" unique_id=617469629]
+script = ExtResource("5_level")
+
+[node name="Background" type="CanvasLayer" parent="." unique_id=599933427]
+layer = -10
+
+[node name="Sky" type="Sprite2D" parent="Background" unique_id=1988321002]
+position = Vector2(576, 324)
+scale = Vector2(0.9, 0.9)
+texture = ExtResource("7_bg")
+
+[node name="Level" type="Node2D" parent="." unique_id=1821281042]
+
+[node name="Ground" type="StaticBody2D" parent="Level" unique_id=952459091]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Level/Ground" unique_id=842663058]
+position = Vector2(576, 604)
+shape = SubResource("Shape_ground")
+
+[node name="Body" type="ColorRect" parent="Level/Ground" unique_id=1772983972 groups=["p_ground_body"]]
+offset_top = 560.0
+offset_right = 1152.0
+offset_bottom = 648.0
+color = Color(0.447, 0.365, 0.176, 1)
+
+[node name="Top" type="ColorRect" parent="Level/Ground" unique_id=1288873907 groups=["p_ground_top"]]
+offset_top = 560.0
+offset_right = 1152.0
+offset_bottom = 578.0
+color = Color(0.376, 0.584, 0.239, 1)
+
+[node name="Platform1" type="StaticBody2D" parent="Level" unique_id=2121157420]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Level/Platform1" unique_id=1219281361]
+position = Vector2(310, 510)
+shape = SubResource("Shape_p1")
+
+[node name="Body" type="ColorRect" parent="Level/Platform1" unique_id=680662673 groups=["p_ground_body"]]
+offset_left = 230.0
+offset_top = 500.0
+offset_right = 390.0
+offset_bottom = 520.0
+color = Color(0.447, 0.365, 0.176, 1)
+
+[node name="Top" type="ColorRect" parent="Level/Platform1" unique_id=383402405 groups=["p_ground_top"]]
+offset_left = 230.0
+offset_top = 500.0
+offset_right = 390.0
+offset_bottom = 509.0
+color = Color(0.376, 0.584, 0.239, 1)
+
+[node name="Platform2" type="StaticBody2D" parent="Level" unique_id=1972956847]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Level/Platform2" unique_id=1701314550]
+position = Vector2(600, 470)
+shape = SubResource("Shape_p2")
+
+[node name="Body" type="ColorRect" parent="Level/Platform2" unique_id=1638755803 groups=["p_ground_body"]]
+offset_left = 520.0
+offset_top = 460.0
+offset_right = 680.0
+offset_bottom = 480.0
+color = Color(0.447, 0.365, 0.176, 1)
+
+[node name="Top" type="ColorRect" parent="Level/Platform2" unique_id=343130922 groups=["p_ground_top"]]
+offset_left = 520.0
+offset_top = 460.0
+offset_right = 680.0
+offset_bottom = 469.0
+color = Color(0.376, 0.584, 0.239, 1)
+
+[node name="Platform3" type="StaticBody2D" parent="Level" unique_id=773065308]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Level/Platform3" unique_id=1942382169]
+position = Vector2(880, 430)
+shape = SubResource("Shape_p3")
+
+[node name="Body" type="ColorRect" parent="Level/Platform3" unique_id=1340037274 groups=["p_ground_body"]]
+offset_left = 800.0
+offset_top = 420.0
+offset_right = 960.0
+offset_bottom = 440.0
+color = Color(0.447, 0.365, 0.176, 1)
+
+[node name="Top" type="ColorRect" parent="Level/Platform3" unique_id=548382932 groups=["p_ground_top"]]
+offset_left = 800.0
+offset_top = 420.0
+offset_right = 960.0
+offset_bottom = 429.0
+color = Color(0.376, 0.584, 0.239, 1)
+
+[node name="Platform4" type="StaticBody2D" parent="Level" unique_id=104136071]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Level/Platform4" unique_id=312959722]
+position = Vector2(900, 330)
+shape = SubResource("Shape_p4")
+
+[node name="Body" type="ColorRect" parent="Level/Platform4" unique_id=1783506514 groups=["p_ground_body"]]
+offset_left = 860.0
+offset_top = 320.0
+offset_right = 940.0
+offset_bottom = 340.0
+color = Color(0.447, 0.365, 0.176, 1)
+
+[node name="Top" type="ColorRect" parent="Level/Platform4" unique_id=306795640 groups=["p_ground_top"]]
+offset_left = 860.0
+offset_top = 320.0
+offset_right = 940.0
+offset_bottom = 329.0
+color = Color(0.376, 0.584, 0.239, 1)
+
+[node name="Spikes" type="Node2D" parent="Level" unique_id=1218399167]
+
+[node name="Spike1" parent="Level/Spikes" unique_id=1368974984 instance=ExtResource("3_spike")]
+position = Vector2(455, 544)
+
+[node name="Spike2" parent="Level/Spikes" unique_id=76856239 instance=ExtResource("3_spike")]
+position = Vector2(740, 544)
+
+[node name="Coins" type="Node2D" parent="Level" unique_id=462573322]
+
+[node name="Coin1" parent="Level/Coins" unique_id=2043294000 instance=ExtResource("2_coin")]
+position = Vector2(150, 500)
+
+[node name="Coin2" parent="Level/Coins" unique_id=1879531580 instance=ExtResource("2_coin")]
+position = Vector2(310, 455)
+
+[node name="Coin3" parent="Level/Coins" unique_id=66105821 instance=ExtResource("2_coin")]
+position = Vector2(600, 415)
+
+[node name="Coin4" parent="Level/Coins" unique_id=1245429582 instance=ExtResource("2_coin")]
+position = Vector2(880, 375)
+
+[node name="Coin5" parent="Level/Coins" unique_id=900437402 instance=ExtResource("2_coin")]
+position = Vector2(900, 275)
+
+[node name="Coin6" parent="Level/Coins" unique_id=1167613501 instance=ExtResource("2_coin")]
+position = Vector2(455, 465)
+
+[node name="Coin7" parent="Level/Coins" unique_id=468245745 instance=ExtResource("2_coin")]
+position = Vector2(740, 465)
+
+[node name="Coin8" parent="Level/Coins" unique_id=729147300 instance=ExtResource("2_coin")]
+position = Vector2(1050, 500)
+
+[node name="Goal" parent="Level" unique_id=2069843304 instance=ExtResource("4_goal")]
+position = Vector2(1070, 440)
+
+[node name="Player" parent="Level" unique_id=876244331 instance=ExtResource("1_player")]
+position = Vector2(80, 420)
+
+[node name="HUD" type="CanvasLayer" parent="." unique_id=2068140397]
+script = ExtResource("6_hud")
