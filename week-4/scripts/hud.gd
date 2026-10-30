@@ -32,6 +32,7 @@ func _ready() -> void:
 	Game.health_changed.connect(_on_health_changed)
 	Game.timer_changed.connect(_on_timer_changed)
 	Game.palette_changed.connect(_apply_palette)
+	Game.popup_requested.connect(_on_popup_requested)
 
 	_on_score_changed(Game.score)
 	_on_health_changed(Game.health, Game.MAX_HEALTH)
@@ -193,6 +194,27 @@ func show_result(win: bool, time: float, score: int) -> void:
 	_overlay.visible = true
 
 
+## Short centre-screen message — used when the player is sent back to a checkpoint.
+func show_toast(text: String) -> void:
+	var holder := CenterContainer.new()
+	holder.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	holder.offset_top = 104.0
+	holder.offset_bottom = 156.0
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(holder)
+
+	var label := _make_label(text, 30)
+	label.add_theme_color_override("font_color", Game.get_color("accent"))
+	holder.add_child(label)
+
+	label.modulate.a = 0.0
+	var tween := create_tween()
+	tween.tween_property(label, "modulate:a", 1.0, 0.15)
+	tween.tween_interval(1.5)
+	tween.tween_property(label, "modulate:a", 0.0, 0.4)
+	tween.tween_callback(holder.queue_free)
+
+
 func _resume() -> void:
 	get_tree().paused = false
 	_overlay.visible = false
@@ -202,6 +224,7 @@ func _resume() -> void:
 func _on_score_changed(score: int) -> void:
 	if _score_label != null:
 		_score_label.text = str(score)
+		_punch(_score_label)
 
 
 func _on_health_changed(health: int, _max_health: int) -> void:
@@ -220,6 +243,31 @@ func _apply_palette(_colorblind: bool) -> void:
 		_time_label.add_theme_color_override("font_color", Game.get_color("accent"))
 	if _hint_label != null:
 		_hint_label.add_theme_color_override("font_color", Game.get_color("accent"))
+
+
+## Floating "+10" text at the world position where it was picked up.
+func _on_popup_requested(world_pos: Vector2, text: String) -> void:
+	var screen := get_viewport().get_canvas_transform() * world_pos
+	var label := _make_label(text, 26)
+	label.add_theme_color_override("font_color", Color(1.0, 0.87, 0.35))
+	label.position = screen - Vector2(18, 16)
+	add_child(label)
+
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(label, "position:y", label.position.y - 46.0, 0.7)
+	tween.tween_property(label, "modulate:a", 0.0, 0.7)
+	tween.set_parallel(false)
+	tween.tween_callback(label.queue_free)
+
+
+## Quick scale pop — cheap, readable juice for a number that just changed.
+func _punch(node: Control) -> void:
+	node.pivot_offset = node.size * 0.5
+	node.scale = Vector2(1.3, 1.3)
+	var tween := create_tween()
+	tween.tween_property(node, "scale", Vector2.ONE, 0.2) \
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
 func _format_time(seconds: float) -> String:

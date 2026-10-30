@@ -2,6 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://d141hy3abp42p" path="res://assets/sprite - Edited.png" id="1_4flbx"]
 [ext_resource type="Script" uid="uid://cmgb6xeols24f" path="res://player.gd" id="1_onrkg"]
+[ext_resource type="Script" path="res://scripts/camera.gd" id="2_cam"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_4kxuq"]
 size = Vector2(24, 52)
@@ -156,3 +157,10 @@ initial_velocity_min = 40.0
 initial_velocity_max = 80.0
 scale_amount_min = 2.0
 scale_amount_max = 4.0
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position_smoothing_enabled = true
+position_smoothing_speed = 9.0
+limit_right = 4200
+limit_bottom = 648
+script = ExtResource("2_cam")

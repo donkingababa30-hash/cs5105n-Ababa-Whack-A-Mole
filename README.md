@@ -49,3 +49,6 @@ The enemies changes color when they detect the player, they run into the player 
 
 The enemies get defeated when the player jumps on top of them like mario
 ![alt text](<week 6 enemy die.png>)
+
+Week 7:
+<video controls src="week 7 screen recording.mp4" title="Title"></video>

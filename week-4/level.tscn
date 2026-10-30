@@ -1,0 +1,260 @@
+[gd_scene format=3 uid="uid://dqkph3t8sifo8"]
+
+[ext_resource type="PackedScene" uid="uid://byhq6n2ewbprs" path="res://player.tscn" id="1_player"]
+[ext_resource type="PackedScene" path="res://coin.tscn" id="2_coin"]
+[ext_resource type="PackedScene" path="res://spike.tscn" id="3_spike"]
+[ext_resource type="PackedScene" path="res://goal.tscn" id="4_goal"]
+[ext_resource type="PackedScene" path="res://enemy.tscn" id="5_enemy"]
+[ext_resource type="PackedScene" path="res://checkpoint.tscn" id="6_checkpoint"]
+[ext_resource type="PackedScene" path="res://platform.tscn" id="7_platform"]
+[ext_resource type="Script" uid="uid://difwjinqw7hfi" path="res://scripts/game_level.gd" id="8_level"]
+[ext_resource type="Script" uid="uid://bp070pdodjvi6" path="res://scripts/hud.gd" id="9_hud"]
+[ext_resource type="Texture2D" uid="uid://brha8wjc4jr10" path="res://assets/generated/sky_background.png" id="10_bg"]
+
+[sub_resource type="NavigationPolygon" id="NavPoly_ground"]
+vertices = PackedVector2Array(20, 500, 880, 500, 880, 640, 20, 640, 1030, 500, 1860, 500, 1860, 640, 1030, 640, 2040, 500, 2930, 500, 2930, 640, 2040, 640, 3110, 500, 4180, 500, 4180, 640, 3110, 640)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3), PackedInt32Array(4, 5, 6, 7), PackedInt32Array(8, 9, 10, 11), PackedInt32Array(12, 13, 14, 15)])
+
+[node name="Main" type="Node2D" unique_id=635848341]
+script = ExtResource("8_level")
+
+[node name="Parallax" type="ParallaxBackground" parent="." unique_id=98319924]
+layer = -10
+
+[node name="SkyLayer" type="ParallaxLayer" parent="Parallax" unique_id=1743281574]
+motion_scale = Vector2(0.3, 0)
+motion_mirroring = Vector2(1152, 0)
+
+[node name="Sky" type="Sprite2D" parent="Parallax/SkyLayer" unique_id=295289470]
+position = Vector2(576, 324)
+scale = Vector2(0.9, 0.9)
+texture = ExtResource("10_bg")
+
+[node name="Level" type="Node2D" parent="." unique_id=206704710]
+
+[node name="NavRegion" type="NavigationRegion2D" parent="Level" unique_id=2037564595]
+navigation_polygon = SubResource("NavPoly_ground")
+
+[node name="Ground1" parent="Level" unique_id=612632169 instance=ExtResource("7_platform")]
+position = Vector2(450, 604)
+size = Vector2(900, 88)
+
+[node name="Ground2" parent="Level" unique_id=326141480 instance=ExtResource("7_platform")]
+position = Vector2(1445, 604)
+size = Vector2(870, 88)
+
+[node name="Ground3" parent="Level" unique_id=2060860481 instance=ExtResource("7_platform")]
+position = Vector2(2485, 604)
+size = Vector2(930, 88)
+
+[node name="Ground4" parent="Level" unique_id=1844036626 instance=ExtResource("7_platform")]
+position = Vector2(3645, 604)
+size = Vector2(1110, 88)
+
+[node name="P1" parent="Level" unique_id=1474376075 instance=ExtResource("7_platform")]
+position = Vector2(270, 476)
+
+[node name="P2" parent="Level" unique_id=1394655140 instance=ExtResource("7_platform")]
+position = Vector2(540, 406)
+size = Vector2(180, 32)
+
+[node name="P3" parent="Level" unique_id=357467820 instance=ExtResource("7_platform")]
+position = Vector2(780, 476)
+size = Vector2(160, 32)
+
+[node name="P4" parent="Level" unique_id=2012235041 instance=ExtResource("7_platform")]
+position = Vector2(1150, 476)
+size = Vector2(180, 32)
+
+[node name="P5" parent="Level" unique_id=240392471 instance=ExtResource("7_platform")]
+position = Vector2(1410, 396)
+size = Vector2(180, 32)
+
+[node name="P6" parent="Level" unique_id=1804197171 instance=ExtResource("7_platform")]
+position = Vector2(1670, 316)
+size = Vector2(180, 32)
+
+[node name="P7" parent="Level" unique_id=1449066999 instance=ExtResource("7_platform")]
+position = Vector2(1825, 456)
+size = Vector2(90, 32)
+
+[node name="P8" parent="Level" unique_id=2023160728 instance=ExtResource("7_platform")]
+position = Vector2(2150, 476)
+size = Vector2(180, 32)
+
+[node name="P9" parent="Level" unique_id=128444816 instance=ExtResource("7_platform")]
+position = Vector2(2410, 406)
+size = Vector2(180, 32)
+
+[node name="P10" parent="Level" unique_id=1725111067 instance=ExtResource("7_platform")]
+position = Vector2(2670, 476)
+size = Vector2(180, 32)
+
+[node name="P11" parent="Level" unique_id=107027454 instance=ExtResource("7_platform")]
+position = Vector2(2880, 396)
+size = Vector2(120, 32)
+
+[node name="P12" parent="Level" unique_id=502015423 instance=ExtResource("7_platform")]
+position = Vector2(3220, 476)
+size = Vector2(180, 32)
+
+[node name="P13" parent="Level" unique_id=1739488594 instance=ExtResource("7_platform")]
+position = Vector2(3480, 396)
+size = Vector2(180, 32)
+
+[node name="P14" parent="Level" unique_id=1907700266 instance=ExtResource("7_platform")]
+position = Vector2(3740, 316)
+size = Vector2(180, 32)
+
+[node name="P15" parent="Level" unique_id=1128210363 instance=ExtResource("7_platform")]
+position = Vector2(3970, 456)
+size = Vector2(140, 32)
+
+[node name="Spikes" type="Node2D" parent="Level" unique_id=1062682226]
+
+[node name="S1" parent="Level/Spikes" unique_id=1202595094 instance=ExtResource("3_spike")]
+position = Vector2(500, 536)
+
+[node name="S2" parent="Level/Spikes" unique_id=995968454 instance=ExtResource("3_spike")]
+position = Vector2(790, 536)
+
+[node name="S3" parent="Level/Spikes" unique_id=1618803766 instance=ExtResource("3_spike")]
+position = Vector2(1180, 536)
+
+[node name="S4" parent="Level/Spikes" unique_id=1765311797 instance=ExtResource("3_spike")]
+position = Vector2(1650, 536)
+
+[node name="S5" parent="Level/Spikes" unique_id=605510746 instance=ExtResource("3_spike")]
+position = Vector2(2180, 536)
+
+[node name="S6" parent="Level/Spikes" unique_id=2082695890 instance=ExtResource("3_spike")]
+position = Vector2(2680, 536)
+
+[node name="S7" parent="Level/Spikes" unique_id=2131155762 instance=ExtResource("3_spike")]
+position = Vector2(3250, 536)
+
+[node name="S8" parent="Level/Spikes" unique_id=1447954519 instance=ExtResource("3_spike")]
+position = Vector2(3700, 536)
+
+[node name="Coins" type="Node2D" parent="Level" unique_id=371487620]
+
+[node name="C1" parent="Level/Coins" unique_id=284557852 instance=ExtResource("2_coin")]
+position = Vector2(150, 490)
+
+[node name="C2" parent="Level/Coins" unique_id=1671979612 instance=ExtResource("2_coin")]
+position = Vector2(270, 420)
+
+[node name="C3" parent="Level/Coins" unique_id=772965842 instance=ExtResource("2_coin")]
+position = Vector2(500, 440)
+
+[node name="C4" parent="Level/Coins" unique_id=1722187454 instance=ExtResource("2_coin")]
+position = Vector2(540, 350)
+
+[node name="C5" parent="Level/Coins" unique_id=1537974314 instance=ExtResource("2_coin")]
+position = Vector2(780, 420)
+
+[node name="C6" parent="Level/Coins" unique_id=403274515 instance=ExtResource("2_coin")]
+position = Vector2(790, 440)
+
+[node name="C7" parent="Level/Coins" unique_id=590412823 instance=ExtResource("2_coin")]
+position = Vector2(1100, 490)
+
+[node name="C8" parent="Level/Coins" unique_id=651577242 instance=ExtResource("2_coin")]
+position = Vector2(1150, 420)
+
+[node name="C9" parent="Level/Coins" unique_id=436472396 instance=ExtResource("2_coin")]
+position = Vector2(1410, 340)
+
+[node name="C10" parent="Level/Coins" unique_id=1071874411 instance=ExtResource("2_coin")]
+position = Vector2(1670, 260)
+
+[node name="C11" parent="Level/Coins" unique_id=621299758 instance=ExtResource("2_coin")]
+position = Vector2(1825, 400)
+
+[node name="C12" parent="Level/Coins" unique_id=1634160601 instance=ExtResource("2_coin")]
+position = Vector2(2150, 420)
+
+[node name="C13" parent="Level/Coins" unique_id=891424733 instance=ExtResource("2_coin")]
+position = Vector2(2250, 490)
+
+[node name="C14" parent="Level/Coins" unique_id=69567979 instance=ExtResource("2_coin")]
+position = Vector2(2410, 350)
+
+[node name="C15" parent="Level/Coins" unique_id=1031972813 instance=ExtResource("2_coin")]
+position = Vector2(2670, 420)
+
+[node name="C16" parent="Level/Coins" unique_id=4411472 instance=ExtResource("2_coin")]
+position = Vector2(2880, 340)
+
+[node name="C17" parent="Level/Coins" unique_id=1345654041 instance=ExtResource("2_coin")]
+position = Vector2(3220, 420)
+
+[node name="C18" parent="Level/Coins" unique_id=662426287 instance=ExtResource("2_coin")]
+position = Vector2(3350, 490)
+
+[node name="C19" parent="Level/Coins" unique_id=693585094 instance=ExtResource("2_coin")]
+position = Vector2(3480, 340)
+
+[node name="C20" parent="Level/Coins" unique_id=440335523 instance=ExtResource("2_coin")]
+position = Vector2(3740, 260)
+
+[node name="C21" parent="Level/Coins" unique_id=813245319 instance=ExtResource("2_coin")]
+position = Vector2(3970, 400)
+
+[node name="Enemies" type="Node2D" parent="Level" unique_id=1950792405]
+
+[node name="E1" parent="Level/Enemies" unique_id=192625350 instance=ExtResource("5_enemy")]
+position = Vector2(500, 500)
+patrol_right = 850.0
+
+[node name="E2" parent="Level/Enemies" unique_id=2127998180 instance=ExtResource("5_enemy")]
+position = Vector2(1200, 500)
+patrol_left = 1050.0
+patrol_right = 1450.0
+
+[node name="E3" parent="Level/Enemies" unique_id=2102672146 instance=ExtResource("5_enemy")]
+position = Vector2(1750, 500)
+patrol_left = 1600.0
+patrol_right = 1850.0
+
+[node name="E4" parent="Level/Enemies" unique_id=1047745008 instance=ExtResource("5_enemy")]
+position = Vector2(2250, 500)
+patrol_left = 2060.0
+patrol_right = 2450.0
+
+[node name="E5" parent="Level/Enemies" unique_id=219852709 instance=ExtResource("5_enemy")]
+position = Vector2(2800, 500)
+patrol_left = 2600.0
+patrol_right = 2930.0
+
+[node name="E6" parent="Level/Enemies" unique_id=930868577 instance=ExtResource("5_enemy")]
+position = Vector2(3400, 500)
+patrol_left = 3150.0
+patrol_right = 3600.0
+
+[node name="E7" parent="Level/Enemies" unique_id=1225466319 instance=ExtResource("5_enemy")]
+position = Vector2(3900, 500)
+patrol_left = 3700.0
+patrol_right = 4050.0
+
+[node name="Checkpoints" type="Node2D" parent="Level" unique_id=924077580]
+
+[node name="CP1" parent="Level/Checkpoints" unique_id=644875591 instance=ExtResource("6_checkpoint")]
+position = Vector2(1040, 560)
+
+[node name="CP2" parent="Level/Checkpoints" unique_id=281937191 instance=ExtResource("6_checkpoint")]
+position = Vector2(2050, 560)
+index = 2
+
+[node name="CP3" parent="Level/Checkpoints" unique_id=1511568461 instance=ExtResource("6_checkpoint")]
+position = Vector2(3120, 560)
+index = 3
+
+[node name="Goal" parent="Level" unique_id=2125868851 instance=ExtResource("4_goal")]
+position = Vector2(4090, 440)
+
+[node name="Player" parent="Level" unique_id=1748333656 instance=ExtResource("1_player")]
+position = Vector2(60, 480)
+
+[node name="HUD" type="CanvasLayer" parent="." unique_id=764552345]
+script = ExtResource("9_hud")

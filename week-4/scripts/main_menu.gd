@@ -1,6 +1,8 @@
 extends Control
-## Main menu — Start / Options / Quit, with the accessibility toggle and
-## separate music / SFX volume sliders (both routed through their own buses).
+## Main menu — Start / Continue / Options / Quit, with the accessibility toggle
+## and separate music / SFX volume sliders (both routed through their own buses).
+
+const LEVEL_SCENE := "res://main.tscn"
 
 var _options_panel: PanelContainer
 var _colorblind_button: CheckButton
@@ -39,11 +41,11 @@ func _build_menu() -> void:
 	box.add_theme_constant_override("separation", 16)
 	centre.add_child(box)
 
-	var title := _label("WEEK 5", 52)
+	var title := _label("WEEK 7", 52)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(title)
 
-	var subtitle := _label("UI / UX & Audio", 24)
+	var subtitle := _label("Juice, Save/Load & Optimization", 24)
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	subtitle.add_theme_color_override("font_color", Game.get_color("accent"))
 	box.add_child(subtitle)
@@ -54,6 +56,11 @@ func _build_menu() -> void:
 	start.pressed.connect(_on_start)
 	box.add_child(start)
 
+	var cont := _button("Continue")
+	cont.disabled = not can_continue()
+	cont.pressed.connect(_on_continue)
+	box.add_child(cont)
+
 	var options := _button("Options")
 	options.pressed.connect(_on_toggle_options)
 	box.add_child(options)
@@ -61,6 +68,10 @@ func _build_menu() -> void:
 	var quit := _button("Quit")
 	quit.pressed.connect(_on_quit)
 	box.add_child(quit)
+
+	var stats := _label(_stats_text(), 18)
+	stats.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(stats)
 
 	_build_options(box)
 
@@ -103,9 +114,33 @@ func _build_options(parent: VBoxContainer) -> void:
 	box.add_child(_sfx_slider)
 
 
+func can_continue() -> bool:
+	return Game.has_save() and Game.checkpoint_index > 0
+
+
+func _stats_text() -> String:
+	if not Game.has_save():
+		return "No saved progress yet"
+	return "Best %d   •   Runs %d   •   Coins %d" % [
+		Game.best_score, Game.runs_completed, Game.total_coins]
+
+
 func _on_start() -> void:
 	Game.play_sfx("click")
-	get_tree().change_scene_to_file("res://main.tscn")
+	Game.continue_run = false
+	_go_to_level()
+
+
+func _on_continue() -> void:
+	Game.play_sfx("click")
+	Game.continue_run = true
+	_go_to_level()
+
+
+func _go_to_level() -> void:
+	var err: int = get_tree().change_scene_to_file(LEVEL_SCENE)
+	if err != OK:
+		push_error("Could not load %s (error %d)" % [LEVEL_SCENE, err])
 
 
 func _on_toggle_options() -> void:

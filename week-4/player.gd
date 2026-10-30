@@ -133,6 +133,45 @@ func is_player() -> bool:
 	return true
 
 
+## Fell into a pit: lose a heart and return to the last checkpoint, with the
+## same flashing invulnerability a normal hit gives.
+func respawn() -> void:
+	if not Game.is_running:
+		return
+	global_position = Game.respawn_point
+	velocity = Vector2.ZERO
+	Game.damage(1)
+	Game.shake(0.7)
+	Game.hit_stop(0.05)
+
+	var flash := create_tween()
+	for i in 4:
+		flash.tween_property(sprite, "modulate:a", 0.3, 0.09)
+		flash.tween_property(sprite, "modulate:a", 1.0, 0.09)
+	flash.tween_callback(func() -> void: sprite.modulate.a = 1.0)
+
+
+## Put the player back on their feet at the last checkpoint after losing every
+## heart: full bar, no momentum, and a longer flash of invulnerability so they
+## are not hit again the instant they reappear.
+func revive() -> void:
+	global_position = Game.respawn_point
+	velocity = Vector2.ZERO
+	is_dashing = false
+	air_jumps_left = max_air_jumps
+	is_invulnerable = true
+	Game.refill_health()
+
+	var flash := create_tween()
+	for i in 8:
+		flash.tween_property(sprite, "modulate:a", 0.2, 0.09)
+		flash.tween_property(sprite, "modulate:a", 1.0, 0.09)
+	flash.tween_callback(func() -> void: sprite.modulate.a = 1.0)
+
+	await get_tree().create_timer(1.5).timeout
+	is_invulnerable = false
+
+
 ## Called by hazards. Breaks a heart, knocks the player back and grants a
 ## short window of invulnerability (with a flashing sprite) so a single hit
 ## never drains more than one heart.
@@ -142,6 +181,8 @@ func hurt() -> void:
 	is_invulnerable = true
 	Game.play_sfx("hurt")
 	Game.damage(1)
+	Game.shake(0.55)
+	Game.hit_stop(0.06)
 	velocity.y = -280.0
 	velocity.x = -dash_direction * 240.0
 	var flash := create_tween()

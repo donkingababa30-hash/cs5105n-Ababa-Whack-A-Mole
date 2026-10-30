@@ -8,6 +8,12 @@ const SCORE_VALUE := 10
 
 func _ready() -> void:
 	add_to_group("coins")
+	# A "Continue" resumes the run this coin was saved from, so a coin already
+	# picked up in that run stays gone. Game.continue_run is still set here — the
+	# level clears it in its own _ready, which runs after every coin's.
+	if Game.continue_run and Game.is_coin_collected(str(name)):
+		queue_free()
+		return
 	body_entered.connect(_on_body_entered)
 	_start_bob()
 
@@ -23,7 +29,8 @@ func _on_body_entered(body: Node2D) -> void:
 	if not body is CharacterBody2D:
 		return
 	Game.play_sfx("coin")
-	Game.add_score(SCORE_VALUE)
+	Game.collect_coin(str(name))
+	Game.popup(global_position, "+%d" % SCORE_VALUE)
 	_pop()
 
 

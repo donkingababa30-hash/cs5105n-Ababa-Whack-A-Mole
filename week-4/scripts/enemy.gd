@@ -58,6 +58,7 @@ var _attack_timer: float = 0.0
 var _attack_direction: float = 1.0
 var _last_known: Vector2 = Vector2.ZERO
 var _player: Node2D = null
+var _nav_target: Vector2 = Vector2.INF
 var _player_in_detection: bool = false
 var _base_scale: Vector2 = Vector2.ONE
 
@@ -218,11 +219,22 @@ func _step_toward(target_x: float, speed: float) -> void:
 	# We must also NOT set the agent's target before that first sync: the agent
 	# only recomputes its path when the target CHANGES, so a target set while the
 	# map is still empty would stick and the path would stay empty forever.
+	# Tethered to the patrol stretch, so a chase never leads a slime into a pit.
+	target_x = clampf(target_x, patrol_left, patrol_right)
+
 	if not _map_ready():
 		_drive(target_x, speed)
 		return
 
-	agent.target_position = Vector2(target_x, global_position.y)
+	# OPTIMISATION: the NavigationAgent re-runs a full path query every time
+	# target_position changes, so only hand it a new target once the goal has
+	# actually moved a meaningful distance (12 px here).
+	var goal := Vector2(target_x, global_position.y)
+	if goal.distance_squared_to(_nav_target) > 144.0:
+		_nav_target = goal
+		agent.target_position = goal
+		Game.nav_target_updates += 1
+
 	_drive(agent.get_next_path_position().x, speed)
 
 
@@ -279,6 +291,9 @@ func _die(player: CharacterBody2D) -> void:
 	_enter_state(State.DEAD)
 	Game.play_sfx("coin")
 	Game.add_score(25)
+	Game.popup(global_position, "+25")
+	Game.shake(0.6)
+	Game.hit_stop(0.08)
 	player.velocity.y = -330.0
 	detection.set_deferred("monitoring", false)
 	hitbox.set_deferred("monitoring", false)

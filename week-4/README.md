@@ -1,9 +1,12 @@
-# Week 6 — AI & Enemies
+# Week 7 — Juice, Save/Load & Optimization
 
-A small 2D platformer built in **Godot 4.7**. It started as the Week 5 UI/UX &
-Audio build (HUD, menu, audio buses, accessibility); **Week 6 adds an AI enemy built
-around a finite state machine, using the 2D navigation system to move around the
-level.**
+A small 2D platformer built in **Godot 4.7**, grown week by week:
+
+| Week | Theme | What it added |
+| --- | --- | --- |
+| 5 | UI/UX & Audio | HUD, main menu, audio buses, colourblind-safe palette |
+| 6 | AI & Enemies | An FSM slime that patrols, chases and attacks using 2D navigation |
+| **7** | **Juice, Save/Load & Optimization** | **A much bigger level, a follow camera + parallax, game feel, saved progress with Continue, and a measured optimisation** |
 
 ## Controls
 
@@ -14,6 +17,153 @@ level.**
 | Dash | `Shift` |
 | Double jump | `Space` / `W` / `↑` again while airborne |
 | Pause | `Esc` |
+
+---
+
+## The level is much bigger
+
+The Week 6 level was a single 1120 px strip. Week 7 rebuilds it as a **4200 px**
+level (≈3.6 screens) with real gaps to jump, so the follow camera has something to
+follow:
+
+| | Week 6 | Week 7 |
+| --- | --- | --- |
+| Level width | 1120 px | **4200 px** |
+| Ground | 1 continuous slab | **4 segments** with 3 pits between them |
+| Ledges | 5 | **11** (one-way) |
+| Spikes | 2 | **11**, incl. a 364 px gauntlet |
+| Coins | 8 | **22** |
+| Enemies | 2 | **6**, each in its own safe pocket |
+| Checkpoints | – | **3** respawn points |
+
+### How the level is laid out
+
+It is a left-to-right difficulty ramp; nothing is placed at random:
+
+| Stretch | Tests | What is there |
+| --- | --- | --- |
+| 0–900 | Jumping onto a ledge; your first enemy | flat ground, coins, one slime patrolling **well ahead of you** |
+| 900–1880 | Gaps and spikes | the first pit, a lone spike, a ledge over a spike pair, then a slime |
+| 1880–2000 | A wider gap | a 120 px pit, with a coin floating over it |
+| 2000–2960 | **The climb** | a 3-step staircase (110 → 80 → 80 px rises) above a **spike field** — fall off and you land on spikes |
+| 2960–3150 | The longest gap | a 190 px pit |
+| 3150–3802 | **The gauntlet** | 11 spikes across 364 px — a single jump (≈295 px) *cannot* clear it, so the double jump is required |
+| 3802–4180 | The finish | a landing ledge, a guard slime, the goal |
+
+The rules the layout follows:
+
+* **A checkpoint before every hard bit**, never after it — CP1 before the spikes, CP2
+  before the climb, CP3 before the gauntlet.
+* **You can always see a hazard before committing to it** — enemies patrol out in the
+  open, and every spike sits on flat ground with a clear run-up.
+* **Coins mark the intended route** and float over pits and spikes, so chasing them
+  teaches the jumps.
+* **Optional risk**: the best coins are up the staircase and over the gauntlet, so
+  there is a reason to take the hard line.
+* **Enemies never stand at a jump-off point** — each patrols a safe pocket of ground,
+  so one can't shove you into a pit.
+
+### Losing all your hearts
+
+Running out of hearts does **not** end the run. The player is put back on the last
+checkpoint they touched (`Game.respawn_point`), the health bar refills, and the timer,
+score and collected coins all carry on. A short centre-screen toast says where they
+went back to, and they get 1.5 s of flashing invulnerability so they are not hit again
+the instant they reappear. **Falling into a pit costs one heart and respawns you on the
+same flag**, not at the start.
+
+That matters because the level is roughly 40 seconds long: without it, one mistake at
+the gauntlet threw away the entire run. The checkpoints are placed *before* each hard
+section (CP1 before the spikes, CP2 before the climb, CP3 before the gauntlet), so the
+worst case is re-playing one challenge rather than the whole level.
+
+Two things make it work, and both were wrong to begin with:
+
+* **Flags re-arm on every run.** The flag you have reached *in this run*
+  (`Game.run_checkpoint`) is reset by `start_run()`; only the saved furthest-flag value
+  that **Continue** resumes from is persistent. The arming guard originally used the
+  saved value, so once you had reached the last flag in any session no flag would ever
+  arm again — every death and every fall sent you back to the start even though the
+  flags looked active.
+* **The respawn point is a flag, not the start.** `Game.respawn_point` holds the last
+  flag's position (34 px above it, where the player is placed); the level start is only
+  the fallback used before the first flag.
+
+### One-way ledges
+
+Every floating ledge is a **one-way** collision shape, so you can jump up *through* it
+and land on top. This fixed a real bug: a ledge 100 px above the ground puts its
+underside only 16 px above the player's head, which silently **blocked the jump
+underneath it** — and one ledge overhung a pit, turning it into an unavoidable death.
+Ground strips stay solid, so a fall can't slip sideways through a pit edge.
+
+### No duplicate pickups
+
+Coins are spaced so none overlap (the automated check fails if any two are within
+45 px). The previous layout had two coins 22 px apart, which read as a single
+glitched pickup.
+
+Authoring that by hand inside one scene file would have been unmaintainable, so the
+level is now assembled from **reusable scenes**: `platform.tscn` takes an exported
+`size` and builds its own collision shape (so a platform is three lines of scene
+text), and `checkpoint.tscn` is a respawn point you drop in anywhere.
+
+## Game feel ("juice")
+
+| Moment | Effect |
+| --- | --- |
+| Any hit taken | Screen shake + a short **hit-stop** (the game freezes for ~60 ms) |
+| Stomping a slime | Shake + hit-stop + a floating **`+25`** popup |
+| Collecting a coin | Floating `+<n>` popup + the score number **punches** (scales up, settles back) |
+| Moving at all | A smoothed follow camera, so the level glides past instead of snapping |
+
+All of it is requested through the `Game` autoload (`Game.shake()`, `Game.hit_stop()`,
+`Game.popup()`), so any script can add game feel without knowing which node listens.
+
+## Follow camera & parallax
+
+`scripts/camera.gd` is a `Camera2D` that follows the player with smoothing, clamps to
+the level bounds, and adds **trauma-based screen shake**: `Game.shake(amount)` adds
+trauma, which the camera decays and turns into an offset proportional to `trauma²`.
+Small hits barely move the screen; a stomp kicks it.
+
+Behind the level a `ParallaxBackground` scrolls the painted sky at **0.3×** camera
+speed (with mirroring, so it never runs out).
+
+## Save / load and "Continue"
+
+Progress is written to `user://save.json`: best score, best time, total coins, runs
+completed, the furthest flag reached, and the **state of the run in progress** — its
+score and the list of coins it had already picked up. Picking up a coin or reaching a
+flag writes the file, so quitting from the pause menu never loses anything.
+
+**Continue** only appears when there is something to continue from, and it resumes that
+run: the score you had, and with the coins you had already taken **still gone**. Coins
+are tracked by node name, and each one deletes itself as the level loads when its name
+is already in that list — so a Continue can't hand you the same coin twice.
+
+**Start Game** clears that run-in-progress, so a fresh run has no coins and no flag.
+
+## Optimisation (measured, not guessed)
+
+Profiling the level showed **~1800 FPS average, 1136 FPS 1 % low** — there was no
+frame-rate problem, so the cost that mattered was *per-frame work*, not frame time.
+The biggest of those was the enemy AI: every slime handed its `NavigationAgent2D` a
+brand-new target **every physics frame**, and changing the target is exactly what
+makes the agent recompute a path.
+
+**The change:** a slime now only re-issues its navigation target when the goal has
+actually moved more than 12 px (`goal.distance_squared_to(_nav_target) > 144.0`).
+
+**Measured effect** — headless probe, one slime chasing a stationary player, 150
+physics frames:
+
+| | Navigation target / path updates |
+| --- | --- |
+| Before | 150 (one every frame) |
+| After | **6** |
+
+A ≈96 % cut in navigation path queries, with no visible change in behaviour.
 
 ---
 
@@ -192,23 +342,34 @@ Before → After:        <e.g. "died at spike 2 every run" → "clears it after 
 godot --headless --path . res://tests/probe.tscn
 ```
 
-It checks that the palette switches and reverts, that the audio buses and music
-stream are configured, that the enemy runs through PATROL -> CHASE -> ATTACK with a
-real navigation path (and can be stomped), and that an auto-player can traverse the
-level to the goal.
+It checks that the palette switches and reverts, that the enemy runs through the real
+states `PATROL -> CHASE -> ATTACK -> DEAD` with a live navigation path, that an
+**off-centre** landing does *not* kill a slime while a centred stomp **does**, the
+single vs double jump heights, that the coin over the spikes is collectable, that a
+one-way ledge is landed on from above **and** passed through from below, that the
+ground really is drawn with its 9 px grass strip (colour **and** height), that touching
+a real flag sets the respawn point, that losing every heart returns the player to that
+flag with a full bar and the run still going, that **Continue** keeps the score and
+leaves the already-collected coins gone, that a save file round-trips through JSON, and
+that an auto-player can traverse the whole 4200 px level to the goal (**≈14 s, reaching
+x = 4073, with no pit falls** — the auto-player uses its air jump to recover, so the
+result is repeatable rather than luck-dependent).
 
 ## Project structure
 
 ```
-main_menu.tscn / scripts/main_menu.gd   Main menu + Options (accessibility & audio)
-main.tscn      / scripts/game_level.gd  The level: layout, timer, pause & results
-scripts/game.gd                         Autoload: state, audio, palette, settings
-scripts/hud.gd                          HUD (score / timer / health) + overlays
-coin.tscn spike.tscn goal.tscn          Collectible, hazard, goal + their scripts
-enemy.tscn / scripts/enemy.gd           The AI slime (FSM + navigation)
-player.tscn / player.gd                 The character (movement, dash, damage)
-default_bus_layout.tres                 Music / SFX audio buses
-assets/audio/                           Generated SFX + music
-assets/generated/                       Generated sprites (coin, spike, heart, flag, sky)
-tests/probe.tscn                        Headless smoke test
+main_menu.tscn / scripts/main_menu.gd     Main menu + Options (Continue, accessibility, audio)
+main.tscn      / scripts/game_level.gd     The level, respawn, pause & results panel
+platform.tscn  / scripts/platform.gd       Reusable ledge/ground (exported size; one-way; @tool)
+checkpoint.tscn/ scripts/checkpoint.gd     Respawn point
+player.tscn    / player.gd                 The character (move, dash, jump, double jump)
+scripts/camera.gd                          Follow camera + trauma-based screen shake
+scripts/game.gd                            Autoload: state, audio, palette, juice, save/load
+scripts/hud.gd                             HUD (score / timer / health) + popups & overlays
+coin.tscn spike.tscn goal.tscn             Collectible, hazard, goal + their scripts
+enemy.tscn / scripts/enemy.gd              The AI slime (FSM + navigation)
+default_bus_layout.tres                    Music / SFX audio buses
+assets/audio/                              Generated SFX + music
+assets/generated/                          Generated sprites (coin, spike, heart, flag, sky, slime)
+tests/probe.tscn                           Headless smoke test
 ```
