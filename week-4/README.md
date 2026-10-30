@@ -1,8 +1,9 @@
-# Week 5 — UI / UX & Audio
+# Week 6 — AI & Enemies
 
-A small 2D platformer built in **Godot 4.7** for the Week 5 activity: a HUD, a main
-menu, mixed sound effects and music on separate audio buses, and one accessibility
-feature.
+A small 2D platformer built in **Godot 4.7**. It started as the Week 5 UI/UX &
+Audio build (HUD, menu, audio buses, accessibility); **Week 6 adds an AI enemy built
+around a finite state machine, using the 2D navigation system to move around the
+level.**
 
 ## Controls
 
@@ -11,7 +12,101 @@ feature.
 | Move | `←` / `→` or `A` / `D` |
 | Jump | `Space` / `W` / `↑` |
 | Dash | `Shift` |
+| Double jump | `Space` / `W` / `↑` again while airborne |
 | Pause | `Esc` |
+
+---
+
+# Week 6 — the enemy
+
+## Behaviour (decided in words first)
+
+"Patrol a stretch of ground until it sees the player, chase them, and lunge when it
+gets close; go back to patrolling if it loses sight. A player who lands on its head
+defeats it."
+
+## The state machine
+
+`scripts/enemy.gd` is a **finite state machine** — the slime is always in exactly
+one state, and `_enter_state()` is the only place a state can change:
+
+```mermaid
+flowchart LR
+	PATROL -->|sees player| CHASE
+	CHASE -->|in attack range, off cooldown| ATTACK
+	CHASE -->|lost sight for 2s| PATROL
+	ATTACK -->|lunge finished| CHASE
+	PATROL -->|player stomps| DEAD
+	CHASE -->|player stomps| DEAD
+	ATTACK -->|player stomps| DEAD
+```
+
+* **PATROL** — wanders between `patrol_left` and `patrol_right`.
+* **CHASE** — follows the player with the `NavigationAgent2D` at `chase_speed`.
+* **ATTACK** — a telegraphed windup (the slime flashes) then a lunge.
+* **DEAD** — stomped from above; squishes, awards 25 points, frees itself.
+
+## Navigation & detection
+
+* A `NavigationRegion2D` covers the walkable ground (`Level/NavRegion`). Each slime
+  has a `NavigationAgent2D` and walks toward `get_next_path_position()` instead of a
+  straight line.
+* Detection is an `Area2D` ("vision box") **plus a `RayCast2D` line-of-sight check**,
+  so a slime cannot see through solid geometry.
+* Collision layers are split: **1 = world, 2 = player, 3 = enemy**, so the enemy
+  detects the player without the player physically colliding with it.
+
+## What was AI-drafted, and what I changed
+
+The first draft of `enemy.gd` — the `enum State`, the `_update_state()`/`match`
+skeleton and the patrol/chase/attack transitions — was drafted by the AI assistant
+from the behaviour written in words above. Everything below was then read, renamed,
+debugged and owned:
+
+| AI draft | What I changed / added |
+| --- | --- |
+| Basic PATROL / CHASE / ATTACK skeleton | Grouped the tuning fields into `@export_group`s so they are balanceable in the Inspector |
+| Moved straight at the player | Rewrote movement to follow the `NavigationAgent2D` path, **and fixed a real bug**: the agent only recomputes its path when the *target changes*, so a target set before the nav map synced stuck forever. The target is now only set once `NavigationServer2D.map_get_iteration_id()` is non-zero |
+| Distance check only | Added the `RayCast2D` line-of-sight check so walls actually block vision |
+| No death state | Added the stomp check and `_die()` (bounce, +25 score, squish tween) so the enemy is fair and defeatable |
+| No tuning | Set attack range/cooldown and patrol/chase speeds so the player can always outrun it |
+
+## Balance (tuned after testing)
+
+* Chase speed **115 px/s** vs the player's **280 px/s** — you can always escape.
+* The enemy is **ground-only**, so the platforms are safe ground.
+* A stomp gives **+25** and a bounce, rewarding a confident player.
+
+## Double jump (added so the coins over the spikes are reachable)
+
+One extra jump while airborne (`max_air_jumps = 1`), refilled on landing, with its
+own sound (`jump2`) and a squash/puff effect.
+
+A single jump only rises ~**132 px**, which makes the coins floating directly above
+the two spike rows a pixel-perfect jump (and easy to miss). The double jump reaches
+~**229 px**, so they are comfortable to collect.
+
+## Scale fix (Week 6 polish)
+
+The Week 5 build had bad proportions — the player was **70 × 118 px** while platforms
+were only 20 px thick and spikes 64 × 32. Now:
+
+| Element | Before | After |
+| --- | --- | --- |
+| Player | 70 × 118 | **24 × 52** collision, ~28 × 56 sprite |
+| Platforms | 20 px thick, 160 wide | **32 px thick, 200 wide** |
+| Spikes | 64 × 32 | **96 × 48** (collision 84 × 34) |
+| Coins | 64 px | 45 px |
+
+Because the player is now much shorter, platforms can float **above** the walkable
+path (tops at y=460) instead of walling it off, which makes the level flow better.
+
+---
+
+# Week 5 — UI / UX & Audio
+
+The Week 5 activity: a HUD, a main menu, mixed sound effects and music on separate
+audio buses, and one accessibility feature.
 
 ## What was added (mapped to the brief)
 
@@ -98,7 +193,9 @@ godot --headless --path . res://tests/probe.tscn
 ```
 
 It checks that the palette switches and reverts, that the audio buses and music
-stream are configured, and that an auto-player can traverse the level to the goal.
+stream are configured, that the enemy runs through PATROL -> CHASE -> ATTACK with a
+real navigation path (and can be stomped), and that an auto-player can traverse the
+level to the goal.
 
 ## Project structure
 
@@ -108,6 +205,7 @@ main.tscn      / scripts/game_level.gd  The level: layout, timer, pause & result
 scripts/game.gd                         Autoload: state, audio, palette, settings
 scripts/hud.gd                          HUD (score / timer / health) + overlays
 coin.tscn spike.tscn goal.tscn          Collectible, hazard, goal + their scripts
+enemy.tscn / scripts/enemy.gd           The AI slime (FSM + navigation)
 player.tscn / player.gd                 The character (movement, dash, damage)
 default_bus_layout.tres                 Music / SFX audio buses
 assets/audio/                           Generated SFX + music

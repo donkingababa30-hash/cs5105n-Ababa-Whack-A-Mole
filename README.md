@@ -39,3 +39,13 @@ Game:
 ![alt text](<week 5 game start.png>)
 
 ![alt text](<week 5 game finish.png>)
+
+Week 6:
+
+![alt text](<week 6 AI enemy.png>)
+
+The enemies changes color when they detect the player, they run into the player and then attack
+![alt text](<enemy attacking player.png>)
+
+The enemies get defeated when the player jumps on top of them like mario
+![alt text](<week 6 enemy die.png>)

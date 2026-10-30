@@ -16,6 +16,7 @@ const SFX_POOL_SIZE := 10
 
 const SFX_PATHS := {
 	"jump": "res://assets/audio/jump.wav",
+	"jump2": "res://assets/audio/jump2.wav",
 	"dash": "res://assets/audio/dash.wav",
 	"coin": "res://assets/audio/coin.wav",
 	"hurt": "res://assets/audio/hurt.wav",

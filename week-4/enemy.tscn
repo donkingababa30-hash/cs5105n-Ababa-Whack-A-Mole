@@ -1,0 +1,49 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemy.gd" id="1_enemy"]
+[ext_resource type="Texture2D" path="res://assets/generated/enemy_slime.png" id="2_tex"]
+
+[sub_resource type="RectangleShape2D" id="Shape_body"]
+size = Vector2(28, 32)
+
+[sub_resource type="RectangleShape2D" id="Shape_vision"]
+size = Vector2(260, 110)
+
+[sub_resource type="CircleShape2D" id="Shape_hit"]
+radius = 13.0
+
+[node name="Enemy" type="CharacterBody2D"]
+collision_layer = 4
+collision_mask = 1
+script = ExtResource("1_enemy")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("Shape_body")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.7, 0.7)
+texture = ExtResource("2_tex")
+
+[node name="Detection" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Detection"]
+position = Vector2(0, -12)
+shape = SubResource("Shape_vision")
+
+[node name="Sight" type="RayCast2D" parent="."]
+enabled = false
+collision_mask = 1
+
+[node name="Hitbox" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+shape = SubResource("Shape_hit")
+
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="."]
+path_desired_distance = 6.0
+target_desired_distance = 8.0
+radius = 12.0

@@ -4,14 +4,15 @@
 [ext_resource type="Texture2D" path="res://assets/generated/coin.png" id="2_tex"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_coin"]
-radius = 26.0
+radius = 20.0
 
 [node name="Coin" type="Area2D"]
 collision_layer = 0
-collision_mask = 1
+collision_mask = 2
 script = ExtResource("1_coin")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.7, 0.7)
 texture = ExtResource("2_tex")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]

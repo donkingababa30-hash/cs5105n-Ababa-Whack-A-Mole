@@ -1,11 +1,17 @@
 extends CharacterBody2D
 
-@export var speed: float = 300.0
-@export var jump_velocity: float = -480.0
+@export var speed: float = 280.0
+@export var jump_velocity: float = -500.0
 @export var gravity: float = 980.0
 
 @export var coyote_time: float = 0.12
 var coyote_timer: float = 0.0
+
+# Double jump: one extra jump while airborne (refilled on landing). This is what
+# lets the player reach the coins that float above the spikes.
+@export var max_air_jumps: int = 1
+@export var air_jump_velocity: float = -430.0
+var air_jumps_left: int = 0
 
 @export var dash_speed: float = 800.0
 @export var dash_duration: float = 0.15
@@ -25,10 +31,15 @@ var is_invulnerable: bool = false
 @export var invuln_time: float = 1.2
 
 func _ready() -> void:
+	add_to_group("player")
 	base_scale = sprite.scale
 
 func _physics_process(delta: float) -> void:
 	var can_control: bool = Game.is_running
+
+	# Refill the air jump whenever we are standing on something.
+	if is_on_floor():
+		air_jumps_left = max_air_jumps
 
 	if dash_cooldown_timer > 0:
 		dash_cooldown_timer -= delta
@@ -64,11 +75,18 @@ func _physics_process(delta: float) -> void:
 		else:
 			velocity.x = move_toward(velocity.x, 0, speed)
 
-		if can_control and Input.is_action_just_pressed("jump") and (is_on_floor() or coyote_timer > 0):
-			velocity.y = jump_velocity
-			coyote_timer = 0
-			_squash_and_stretch()
-			Game.play_sfx("jump")
+		if can_control and Input.is_action_just_pressed("jump"):
+			if is_on_floor() or coyote_timer > 0:
+				velocity.y = jump_velocity
+				coyote_timer = 0
+				_squash_and_stretch()
+				Game.play_sfx("jump")
+			elif air_jumps_left > 0:
+				# Double jump.
+				air_jumps_left -= 1
+				velocity.y = air_jump_velocity
+				_double_jump_juice()
+				Game.play_sfx("jump2")
 
 	move_and_slide()
 
@@ -91,6 +109,16 @@ func _squash_and_stretch() -> void:
 	sprite.scale = base_scale * Vector2(0.7, 1.3)
 	var tween := create_tween()
 	tween.tween_property(sprite, "scale", base_scale, 0.15)
+
+func _double_jump_juice() -> void:
+	dust.restart()
+	sprite.scale = base_scale * Vector2(0.7, 1.35)
+	modulate = Color(1.4, 1.4, 1.6)
+	var tween := create_tween()
+	tween.tween_property(sprite, "scale", base_scale, 0.2)
+	var flash := create_tween()
+	flash.tween_property(self, "modulate", Color.WHITE, 0.2)
+
 
 func _dash_juice() -> void:
 	sprite.scale = base_scale * Vector2(1.4, 0.7)
